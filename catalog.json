@@ -1,0 +1,56 @@
+{
+  "store_metadata": {
+    "name": "AURORA STORE BY LUCIO",
+    "version": "1.0",
+    "motd": "Bienvenido a la mejor tienda RGH. ¡Disfruta el contenido!",
+    "status": "online"
+  },
+  "categorias": [
+    {
+      "nombre": "Aplicaciones",
+      "icono": "[APP]",
+      "items": [
+        {
+          "nombre": "Dashlaunch 3.21",
+          "descripcion": "Herramienta esencial para configurar tu RGH.",
+          "size": "3.5 MB",
+          "url": "https://raw.githubusercontent.com/luciotledesma-hub/TiendaAurora-Xbox/main/files/dashlaunch.zip",
+          "dest": "Hdd1:\\Apps\\Dashlaunch\\default.xex"
+        },
+        {
+          "nombre": "XexMenu 1.2",
+          "descripcion": "Explorador de archivos clásico.",
+          "size": "10 MB",
+          "url": "https://raw.githubusercontent.com/luciotledesma-hub/TiendaAurora-Xbox/main/files/xexmenu.zip",
+          "dest": "Hdd1:\\Content\\0000000000000000\\C0DE9999\\00080000\\XexMenu"
+        }
+      ]
+    },
+    {
+      "nombre": "Emuladores",
+      "icono": "[EMU]",
+      "items": [
+        {
+          "nombre": "SNES360",
+          "descripcion": "Emulador de Super Nintendo con soporte para portadas.",
+          "size": "5.2 MB",
+          "url": "https://raw.githubusercontent.com/luciotledesma-hub/TiendaAurora-Xbox/main/files/snes360.zip",
+          "dest": "Hdd1:\\Emuladores\\SNES360\\default.xex"
+        }
+      ]
+    },
+    {
+      "nombre": "Herramientas",
+      "icono": "[TOOL]",
+      "items": [
+        {
+          "nombre": "Aurora Repo Explorer",
+          "descripcion": "Explora repositorios directamente.",
+          "size": "1.1 MB",
+          "url": "https://raw.githubusercontent.com/luciotledesma-hub/TiendaAurora-Xbox/main/files/repo.xex",
+          "dest": "Hdd1:\\Modules\\repo.xex"
+        }
+      ]
+    }
+  ]
+}
