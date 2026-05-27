@@ -3,754 +3,1016 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AURORA STORE BY LUCIO</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<title>AURORA STORE — BY LUCIO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
+  /* ============================
+     CSS VARIABLES & RESET
+  ============================ */
   :root {
     --cyan: #00CFFF;
     --violet: #7B2FFF;
-    --cyan-dim: rgba(0, 207, 255, 0.15);
-    --violet-dim: rgba(123, 47, 255, 0.15);
-    --cyan-glow: 0 0 8px #00CFFF, 0 0 20px rgba(0,207,255,0.5);
-    --violet-glow: 0 0 8px #7B2FFF, 0 0 20px rgba(123,47,255,0.5);
-    --bg: #05070F;
-    --bg2: #080B18;
-    --surface: rgba(8, 14, 30, 0.85);
-    --text: #C8E6F5;
-    --text-dim: rgba(200, 230, 245, 0.45);
-    --grid-color: rgba(0, 207, 255, 0.055);
+    --cyan-dim: rgba(0,207,255,0.15);
+    --violet-dim: rgba(123,47,255,0.15);
+    --cyan-glow: 0 0 20px rgba(0,207,255,0.6), 0 0 40px rgba(0,207,255,0.2);
+    --violet-glow: 0 0 20px rgba(123,47,255,0.6), 0 0 40px rgba(123,47,255,0.2);
+    --glass-bg: rgba(8,12,28,0.55);
+    --glass-border: rgba(0,207,255,0.18);
+    --bg-dark: #04060f;
+    --text-primary: #e8f4ff;
+    --text-muted: rgba(232,244,255,0.5);
+    --font-hud: 'Orbitron', monospace;
     --font-mono: 'Share Tech Mono', monospace;
-    --font-display: 'Orbitron', sans-serif;
     --font-body: 'Rajdhani', sans-serif;
+    --radius: 12px;
+    --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   html { scroll-behavior: smooth; }
 
   body {
-    background-color: var(--bg);
-    color: var(--text);
     font-family: var(--font-body);
+    background: var(--bg-dark);
+    color: var(--text-primary);
     min-height: 100vh;
     overflow-x: hidden;
     position: relative;
   }
 
-  /* ── GRID BACKGROUND ── */
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
+  /* ============================
+     DYNAMIC BACKGROUND
+  ============================ */
+  .bg-aurora {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(ellipse 80% 60% at 20% 30%, rgba(123,47,255,0.18) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 50% at 80% 70%, rgba(0,207,255,0.15) 0%, transparent 65%),
+                radial-gradient(ellipse 40% 40% at 50% 50%, rgba(0,20,50,0.8) 0%, var(--bg-dark) 100%);
+    animation: auroraShift 18s ease-in-out infinite alternate;
+  }
+  .bg-grid {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.04;
     background-image:
-      linear-gradient(var(--grid-color) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-    background-size: 44px 44px;
-    z-index: 0;
-    pointer-events: none;
+      linear-gradient(rgba(0,207,255,1) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,207,255,1) 1px, transparent 1px);
+    background-size: 48px 48px;
+    animation: gridScroll 30s linear infinite;
+  }
+  .bg-scanlines {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.03;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,207,255,0.5) 2px, rgba(0,207,255,0.5) 3px);
+  }
+  @keyframes auroraShift {
+    0%   { background-position: 0% 50%, 100% 50%, center; filter: hue-rotate(0deg); }
+    100% { background-position: 30% 70%, 70% 30%, center; filter: hue-rotate(25deg); }
+  }
+  @keyframes gridScroll {
+    0%   { transform: translateY(0); }
+    100% { transform: translateY(48px); }
   }
 
-  /* ── SCAN LINE OVERLAY ── */
-  body::after {
-    content: '';
-    position: fixed; inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.08) 2px,
-      rgba(0,0,0,0.08) 4px
-    );
-    pointer-events: none;
-    z-index: 1;
-    animation: scanMove 8s linear infinite;
-  }
-
-  @keyframes scanMove {
-    0%   { background-position: 0 0; }
-    100% { background-position: 0 100vh; }
-  }
-
-  /* ── AMBIENT GLOW BLOBS ── */
-  .ambient {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(120px);
-    pointer-events: none;
-    z-index: 0;
-  }
-  .ambient-1 {
-    width: 500px; height: 500px;
-    top: -150px; left: -150px;
-    background: radial-gradient(circle, rgba(123,47,255,0.18), transparent 70%);
-    animation: drift1 12s ease-in-out infinite alternate;
-  }
-  .ambient-2 {
-    width: 400px; height: 400px;
-    bottom: -100px; right: -100px;
-    background: radial-gradient(circle, rgba(0,207,255,0.14), transparent 70%);
-    animation: drift2 15s ease-in-out infinite alternate;
-  }
-  @keyframes drift1 { to { transform: translate(60px, 80px); } }
-  @keyframes drift2 { to { transform: translate(-60px, -50px); } }
-
-  /* ── WRAPPER ── */
+  /* ============================
+     LAYOUT WRAPPER
+  ============================ */
   .wrapper {
-    position: relative; z-index: 2;
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 0 20px 80px;
+    position: relative; z-index: 1;
+    max-width: 1440px; margin: 0 auto;
+    padding: 0 20px 60px;
   }
 
-  /* ── HEADER ── */
+  /* ============================
+     HEADER
+  ============================ */
   header {
-    padding: 48px 0 36px;
-    text-align: center;
-    position: relative;
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(4,6,15,0.85);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 0 20px;
   }
-
-  .logo-line {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 18px;
-    margin-bottom: 10px;
+  .header-inner {
+    max-width: 1440px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 70px; gap: 16px; flex-wrap: wrap;
   }
-
+  .logo-wrap {
+    display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+  }
   .logo-icon {
-    width: 52px; height: 52px;
-    position: relative;
-    flex-shrink: 0;
-  }
-  .logo-icon svg { width: 100%; height: 100%; }
-
-  .site-title {
-    font-family: var(--font-display);
-    font-size: clamp(1.6rem, 4vw, 2.8rem);
-    font-weight: 900;
-    letter-spacing: 0.12em;
-    background: linear-gradient(90deg, var(--cyan), var(--violet));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: drop-shadow(0 0 12px rgba(0,207,255,0.4));
-    animation: titlePulse 3s ease-in-out infinite;
-  }
-
-  @keyframes titlePulse {
-    0%, 100% { filter: drop-shadow(0 0 12px rgba(0,207,255,0.4)); }
-    50%       { filter: drop-shadow(0 0 24px rgba(123,47,255,0.7)); }
-  }
-
-  .subtitle {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--cyan);
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    opacity: 0.7;
-    margin-top: 6px;
-  }
-
-  .header-bar {
-    height: 2px;
-    margin: 20px auto 0;
-    max-width: 600px;
-    background: linear-gradient(90deg, transparent, var(--violet), var(--cyan), transparent);
-    position: relative;
-    overflow: visible;
-  }
-  .header-bar::after {
-    content: '';
-    position: absolute;
-    top: -1px; left: 0; right: 0;
-    height: 4px;
-    background: inherit;
-    filter: blur(4px);
-    opacity: 0.6;
-  }
-
-  /* ── STATUS BAR ── */
-  .status-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 10px 18px;
-    margin: 28px 0 32px;
-    border: 1px solid rgba(0,207,255,0.2);
-    background: var(--surface);
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--cyan);
-    letter-spacing: 0.08em;
-    position: relative;
-    overflow: hidden;
-    backdrop-filter: blur(6px);
-  }
-  .status-bar::before {
-    content: '';
-    position: absolute; left: 0; top: 0; bottom: 0;
-    width: 3px;
-    background: var(--cyan);
-    box-shadow: var(--cyan-glow);
-  }
-  .status-dot {
-    display: inline-block;
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: #00ff88;
-    box-shadow: 0 0 6px #00ff88;
-    animation: blink 1.4s step-end infinite;
-    margin-right: 8px;
-  }
-  @keyframes blink { 50% { opacity: 0; } }
-
-  .status-ping { color: var(--text-dim); }
-  .status-ping span { color: #00ff88; }
-
-  /* ── SECTION HEADER ── */
-  .section-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 22px;
-  }
-  .section-tag {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    color: var(--violet);
-    letter-spacing: 0.2em;
-    background: rgba(123,47,255,0.12);
-    border: 1px solid rgba(123,47,255,0.3);
-    padding: 4px 10px;
-    text-transform: uppercase;
-  }
-  .section-line {
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, rgba(123,47,255,0.4), transparent);
-  }
-
-  /* ── GAME CARDS ── */
-  .catalog {
-    display: grid;
-    gap: 18px;
-  }
-
-  .card {
-    position: relative;
-    border: 1px solid rgba(0,207,255,0.18);
-    background: var(--surface);
-    backdrop-filter: blur(10px);
-    padding: 0;
-    overflow: hidden;
-    transition: transform 0.25s ease, border-color 0.25s ease;
-    cursor: default;
-  }
-  .card::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(135deg, var(--cyan-dim), transparent 60%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-  }
-  .card:hover { transform: translateY(-3px); border-color: rgba(0,207,255,0.5); }
-  .card:hover::before { opacity: 1; }
-
-  /* corner ornaments */
-  .card::after {
-    content: '';
-    position: absolute;
-    top: 0; right: 0;
-    width: 0; height: 0;
-    border-style: solid;
-    border-width: 0 28px 28px 0;
-    border-color: transparent var(--cyan) transparent transparent;
-    opacity: 0.5;
-    transition: opacity 0.3s;
-  }
-  .card:hover::after { opacity: 1; }
-
-  .card-inner {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding: 20px 22px;
-  }
-
-  .card-icon {
-    flex-shrink: 0;
-    width: 64px; height: 64px;
-    border: 1px solid rgba(0,207,255,0.3);
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--violet), var(--cyan));
+    border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    position: relative;
-    background: rgba(0,207,255,0.06);
+    font-family: var(--font-hud); font-weight: 900; font-size: 14px;
+    box-shadow: var(--cyan-glow);
+    animation: logoPulse 3s ease-in-out infinite;
   }
-  .card-icon svg { width: 34px; height: 34px; }
-  .card-icon::after {
-    content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(0,207,255,0.1), transparent);
-    animation: shimmer 3s ease-in-out infinite alternate;
+  @keyframes logoPulse {
+    0%,100% { box-shadow: var(--cyan-glow); }
+    50%      { box-shadow: var(--violet-glow); }
   }
-  @keyframes shimmer {
-    0%   { opacity: 0.3; }
-    100% { opacity: 1; }
-  }
+  .logo-text { font-family: var(--font-hud); font-weight: 900; font-size: 18px; letter-spacing: 3px; }
+  .logo-text span { color: var(--cyan); }
+  .logo-sub { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); letter-spacing: 2px; margin-top: -2px; }
 
-  .card-info { flex: 1; min-width: 0; }
-
-  .card-name {
-    font-family: var(--font-display);
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: 0.06em;
-    text-shadow: 0 0 12px rgba(0,207,255,0.4);
-    margin-bottom: 5px;
+  /* HUD CLOCK + PING */
+  .hud-panel {
+    display: flex; align-items: center; gap: 20px; flex-shrink: 0;
   }
-
-  .card-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 8px;
+  .hud-clock {
+    font-family: var(--font-mono); font-size: 22px; color: var(--cyan);
+    text-shadow: var(--cyan-glow);
+    letter-spacing: 2px; min-width: 90px;
   }
-  .badge {
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    padding: 2px 8px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    border: 1px solid;
-  }
-  .badge-type  { color: var(--cyan);   border-color: rgba(0,207,255,0.4);  background: rgba(0,207,255,0.07); }
-  .badge-ver   { color: var(--violet); border-color: rgba(123,47,255,0.4); background: rgba(123,47,255,0.07); }
-  .badge-free  { color: #00ff88;       border-color: rgba(0,255,136,0.4);  background: rgba(0,255,136,0.07); }
-
-  .card-desc {
-    font-size: 0.82rem;
-    color: var(--text-dim);
-    line-height: 1.5;
-    font-weight: 300;
-  }
-
-  .card-url {
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    color: rgba(0,207,255,0.45);
-    margin-top: 6px;
+  .hud-ping {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--font-mono); font-size: 11px; color: #00ff9d;
+    background: rgba(0,255,157,0.07); border: 1px solid rgba(0,255,157,0.25);
+    border-radius: 20px; padding: 5px 14px;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  }
+  .ping-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #00ff9d; box-shadow: 0 0 8px #00ff9d;
+    animation: pingBlink 1.5s ease-in-out infinite;
+  }
+  @keyframes pingBlink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+
+  /* ============================
+     SEARCH BAR
+  ============================ */
+  .search-wrap {
+    flex: 1; max-width: 420px; min-width: 180px; position: relative;
+  }
+  .search-wrap svg {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    width: 16px; height: 16px; opacity: 0.5;
+  }
+  #searchInput {
+    width: 100%; padding: 10px 14px 10px 40px;
+    background: rgba(0,207,255,0.06); border: 1px solid rgba(0,207,255,0.25);
+    border-radius: 30px; color: var(--text-primary);
+    font-family: var(--font-mono); font-size: 13px; outline: none;
+    transition: var(--transition);
+  }
+  #searchInput:focus {
+    border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(0,207,255,0.1), var(--cyan-glow);
+    background: rgba(0,207,255,0.1);
+  }
+  #searchInput::placeholder { color: var(--text-muted); }
+
+  /* ============================
+     TABS / CATEGORY NAV
+  ============================ */
+  .nav-tabs {
+    display: flex; gap: 6px; overflow-x: auto;
+    padding: 20px 0 4px; scrollbar-width: none;
+    animation: fadeUp 0.5s ease both;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0; padding: 8px 22px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 30px; color: var(--text-muted);
+    font-family: var(--font-hud); font-size: 11px; letter-spacing: 1.5px;
+    cursor: pointer; transition: var(--transition); white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--cyan); border-color: rgba(0,207,255,0.4); }
+  .tab-btn.active {
+    background: linear-gradient(135deg, rgba(0,207,255,0.2), rgba(123,47,255,0.2));
+    border-color: var(--cyan); color: var(--cyan);
+    box-shadow: 0 0 16px rgba(0,207,255,0.2);
   }
 
-  /* ── SEND BUTTON ── */
+  /* Stats bar */
+  .stats-bar {
+    display: flex; align-items: center; gap: 20px;
+    padding: 10px 0 6px; flex-wrap: wrap;
+    font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);
+  }
+  .stats-bar span { color: var(--cyan); font-weight: bold; }
+  #resultCount { color: var(--cyan); }
+
+  /* ============================
+     GAME GRID
+  ============================ */
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px; padding: 16px 0 0;
+  }
+
+  /* ============================
+     GAME CARD
+  ============================ */
+  .game-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius); overflow: hidden;
+    cursor: pointer; position: relative;
+    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+    animation: cardFadeUp 0.5s ease both;
+  }
+  .game-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(0,207,255,0.07), rgba(123,47,255,0.07));
+    opacity: 0; transition: opacity var(--transition); z-index: 0;
+  }
+  .game-card:hover { transform: translateY(-6px) scale(1.02); border-color: var(--cyan); box-shadow: var(--cyan-glow), 0 20px 40px rgba(0,0,0,0.6); }
+  .game-card:hover::before { opacity: 1; }
+
+  .card-cover {
+    width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block;
+    background: linear-gradient(135deg, var(--violet-dim), var(--cyan-dim));
+    transition: filter var(--transition);
+    position: relative; overflow: hidden;
+  }
+  .game-card:hover .card-cover { filter: brightness(1.15) saturate(1.3); }
+  .card-cover-placeholder {
+    width: 100%; aspect-ratio: 16/9;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 42px;
+    background: linear-gradient(135deg, rgba(123,47,255,0.3), rgba(0,207,255,0.15));
+  }
+
+  .card-badge {
+    position: absolute; top: 10px; right: 10px; z-index: 2;
+    padding: 3px 9px; border-radius: 4px;
+    font-family: var(--font-hud); font-size: 9px; letter-spacing: 1px;
+    font-weight: 700;
+  }
+  .badge-game   { background: rgba(0,207,255,0.85); color: #000; }
+  .badge-app    { background: rgba(123,47,255,0.85); color: #fff; }
+  .badge-emu    { background: rgba(255,100,0,0.85);  color: #fff; }
+  .badge-plugin { background: rgba(0,200,100,0.85);  color: #000; }
+
+  .card-body { padding: 14px; position: relative; z-index: 1; }
+  .card-title { font-family: var(--font-hud); font-size: 13px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-meta { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .card-genre { font-size: 10px; background: rgba(255,255,255,0.05); border-radius: 4px; padding: 2px 6px; }
+
+  .card-rating { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+  .rating-bar { flex: 1; height: 3px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+  .rating-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--violet), var(--cyan)); transition: width 1s ease; }
+  .rating-num { font-family: var(--font-mono); font-size: 10px; color: var(--cyan); min-width: 28px; text-align: right; }
+
   .btn-send {
-    flex-shrink: 0;
-    font-family: var(--font-display);
-    font-size: 0.62rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--bg);
+    width: 100%; padding: 9px;
+    background: linear-gradient(135deg, rgba(0,207,255,0.12), rgba(123,47,255,0.12));
+    border: 1px solid rgba(0,207,255,0.35); border-radius: 8px;
+    color: var(--cyan); font-family: var(--font-hud); font-size: 10px; letter-spacing: 2px;
+    cursor: pointer; transition: var(--transition); position: relative; overflow: hidden;
+  }
+  .btn-send::after {
+    content: ''; position: absolute; inset: 0;
     background: linear-gradient(135deg, var(--cyan), var(--violet));
-    border: none;
-    padding: 12px 18px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
-    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
-    min-width: 130px;
-    text-align: center;
+    opacity: 0; transition: opacity var(--transition);
   }
-  .btn-send::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-  .btn-send:hover { transform: scale(1.04); box-shadow: 0 0 20px rgba(0,207,255,0.5), 0 0 40px rgba(123,47,255,0.3); }
-  .btn-send:hover::before { opacity: 1; }
-  .btn-send:active { transform: scale(0.97); }
-  .btn-send.sending { animation: sendPulse 0.6s ease; }
-  @keyframes sendPulse {
-    0%   { box-shadow: 0 0 0 0 rgba(0,207,255,0.7); }
-    70%  { box-shadow: 0 0 0 18px rgba(0,207,255,0); }
-    100% { box-shadow: 0 0 0 0 rgba(0,207,255,0); }
-  }
+  .btn-send:hover { color: #fff; border-color: var(--cyan); box-shadow: var(--cyan-glow); }
+  .btn-send:hover::after { opacity: 0.15; }
+  .btn-send span { position: relative; z-index: 1; }
 
-  .btn-icon { margin-bottom: 4px; display: block; font-size: 1rem; }
+  @keyframes cardFadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .game-card:nth-child(1)  { animation-delay: 0.05s; }
+  .game-card:nth-child(2)  { animation-delay: 0.10s; }
+  .game-card:nth-child(3)  { animation-delay: 0.15s; }
+  .game-card:nth-child(4)  { animation-delay: 0.20s; }
+  .game-card:nth-child(5)  { animation-delay: 0.25s; }
+  .game-card:nth-child(6)  { animation-delay: 0.30s; }
+  .game-card:nth-child(7)  { animation-delay: 0.35s; }
+  .game-card:nth-child(8)  { animation-delay: 0.40s; }
 
-  /* ── SCAN LINE ON CARD ── */
-  .scan-line {
-    position: absolute;
-    left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-    top: -2px;
-    opacity: 0;
-    pointer-events: none;
+  /* Empty state */
+  .empty-state {
+    grid-column: 1/-1; text-align: center; padding: 80px 20px;
+    font-family: var(--font-mono); color: var(--text-muted);
   }
-  .card:hover .scan-line {
-    animation: cardScan 1.2s linear;
-  }
-  @keyframes cardScan {
-    0%   { top: 0;    opacity: 0.8; }
-    100% { top: 100%; opacity: 0; }
-  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-state h3 { font-family: var(--font-hud); color: var(--cyan); margin-bottom: 8px; }
 
-  /* ── TOAST NOTIFICATION ── */
-  #toast-container {
-    position: fixed;
-    bottom: 28px; right: 28px;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    pointer-events: none;
+  /* ============================
+     MODAL
+  ============================ */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(4,6,15,0.8);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
   }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: rgba(8,12,28,0.97);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px; width: 100%; max-width: 560px; max-height: 90vh;
+    overflow-y: auto; position: relative;
+    box-shadow: var(--violet-glow), 0 40px 80px rgba(0,0,0,0.8);
+    transform: translateY(30px) scale(0.96);
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    scrollbar-width: thin; scrollbar-color: var(--cyan) transparent;
+  }
+  .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+  .modal::-webkit-scrollbar { width: 4px; }
+  .modal::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 4px; }
+
+  .modal-cover {
+    width: 100%; aspect-ratio: 16/9;
+    background: linear-gradient(135deg, rgba(123,47,255,0.4), rgba(0,207,255,0.2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 80px; border-radius: 20px 20px 0 0; overflow: hidden;
+  }
+  .modal-body { padding: 24px; }
+  .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 12px; }
+  .modal-title { font-family: var(--font-hud); font-size: 20px; font-weight: 900; line-height: 1.2; }
+  .modal-close {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15);
+    color: var(--text-muted); font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: var(--transition);
+  }
+  .modal-close:hover { background: rgba(255,60,60,0.2); border-color: #ff3c3c; color: #ff3c3c; }
+
+  .modal-score {
+    display: inline-flex; align-items: center; gap: 8px; margin-bottom: 16px;
+    background: rgba(0,207,255,0.08); border: 1px solid rgba(0,207,255,0.25);
+    border-radius: 8px; padding: 8px 16px;
+  }
+  .score-box {
+    width: 52px; height: 52px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-hud); font-weight: 900; font-size: 22px;
+    background: linear-gradient(135deg, var(--violet), var(--cyan));
+    color: #fff; box-shadow: var(--cyan-glow);
+  }
+  .score-label { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); line-height: 1.6; }
+  .score-label strong { display: block; color: var(--text-primary); font-size: 13px; }
+
+  .modal-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .tag {
+    padding: 4px 12px; border-radius: 20px; font-family: var(--font-mono); font-size: 11px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+    color: var(--text-muted);
+  }
+  .tag.cyan  { background: rgba(0,207,255,0.1);   border-color: rgba(0,207,255,0.3);   color: var(--cyan); }
+  .tag.violet { background: rgba(123,47,255,0.1); border-color: rgba(123,47,255,0.3); color: #b078ff; }
+
+  .modal-desc { font-size: 15px; color: rgba(232,244,255,0.75); line-height: 1.7; margin-bottom: 20px; }
+
+  .modal-info-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px;
+  }
+  .info-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 14px; }
+  .info-label { font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px; }
+  .info-value { font-family: var(--font-hud); font-size: 13px; color: var(--text-primary); }
+
+  .btn-primary {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, var(--violet), var(--cyan));
+    border: none; border-radius: 12px; color: #fff;
+    font-family: var(--font-hud); font-size: 13px; letter-spacing: 3px; font-weight: 700;
+    cursor: pointer; transition: var(--transition); position: relative; overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,207,255,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--cyan-glow), 0 8px 30px rgba(0,207,255,0.3); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary::after {
+    content: ''; position: absolute; top: -50%; left: -100%; width: 60%; height: 200%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    transform: skewX(-20deg);
+    animation: shimmer 3s ease-in-out infinite;
+  }
+  @keyframes shimmer { 0%,100%{left:-100%} 50%{left:150%} }
+
+  /* ============================
+     TOAST NOTIFICATION
+  ============================ */
+  #toastContainer { position: fixed; bottom: 30px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
   .toast {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
-    padding: 12px 18px 12px 14px;
-    background: var(--bg2);
-    border-left: 3px solid var(--cyan);
-    border-top: 1px solid rgba(0,207,255,0.3);
-    border-right: 1px solid rgba(0,207,255,0.1);
-    border-bottom: 1px solid rgba(0,207,255,0.1);
-    color: var(--cyan);
-    max-width: 320px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 0 20px rgba(0,207,255,0.2);
-    animation: toastIn 0.3s ease, toastOut 0.4s 3.2s ease forwards;
-    pointer-events: none;
+    min-width: 300px; max-width: 380px;
+    background: rgba(4,6,15,0.97); border-radius: 12px; padding: 14px 18px;
+    border-left: 4px solid var(--cyan);
+    box-shadow: var(--cyan-glow), 0 20px 40px rgba(0,0,0,0.6);
+    font-family: var(--font-mono); font-size: 12px; color: var(--text-primary);
+    animation: toastIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+    display: flex; align-items: flex-start; gap: 12px;
   }
-  .toast .toast-title {
-    color: #fff;
-    font-family: var(--font-display);
-    font-size: 0.65rem;
-    letter-spacing: 0.15em;
-    margin-bottom: 4px;
-  }
-  @keyframes toastIn  { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
-  @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(30px); } }
+  .toast.exit { animation: toastOut 0.3s ease forwards; }
+  .toast-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .toast-title { font-family: var(--font-hud); font-size: 12px; color: var(--cyan); margin-bottom: 4px; }
+  .toast-msg { color: var(--text-muted); line-height: 1.5; word-break: break-all; }
+  @keyframes toastIn { from{opacity:0;transform:translateX(100%) scale(0.8)} to{opacity:1;transform:translateX(0) scale(1)} }
+  @keyframes toastOut { to{opacity:0;transform:translateX(110%) scale(0.9)} }
 
-  /* ── FOOTER ── */
-  footer {
-    margin-top: 56px;
-    padding-top: 20px;
-    border-top: 1px solid rgba(0,207,255,0.12);
-    text-align: center;
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    color: var(--text-dim);
-    letter-spacing: 0.15em;
+  /* ============================
+     PAGE HEADER SECTION
+  ============================ */
+  .page-hero {
+    padding: 30px 0 10px; animation: fadeUp 0.6s ease both;
   }
-  footer span { color: var(--violet); }
+  .page-hero h2 { font-family: var(--font-hud); font-size: clamp(24px,5vw,44px); font-weight: 900; letter-spacing: 2px; line-height: 1.1; }
+  .page-hero h2 .glow { color: var(--cyan); text-shadow: var(--cyan-glow); }
+  .page-hero p { font-size: 15px; color: var(--text-muted); margin-top: 8px; max-width: 480px; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
 
-  /* ── GLITCH TEXT ── */
-  .glitch {
-    position: relative;
-    display: inline-block;
-  }
-  .glitch::before, .glitch::after {
-    content: attr(data-text);
-    position: absolute; top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: transparent;
-    -webkit-background-clip: text;
-    background-clip: text;
-  }
-  .glitch::before {
-    left: 2px;
-    background: linear-gradient(90deg, var(--violet), var(--cyan));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: glitch1 4s infinite linear;
-    clip-path: polygon(0 0, 100% 0, 100% 38%, 0 38%);
-  }
-  .glitch::after {
-    left: -2px;
-    background: linear-gradient(90deg, var(--cyan), var(--violet));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: glitch2 4s infinite linear;
-    clip-path: polygon(0 62%, 100% 62%, 100% 100%, 0 100%);
-  }
-  @keyframes glitch1 {
-    0%,90%,100% { transform: translate(0); opacity: 0; }
-    92%          { transform: translate(-3px, 1px); opacity: 0.8; }
-    94%          { transform: translate(3px, -1px); opacity: 0.8; }
-    96%          { transform: translate(0); opacity: 0; }
-  }
-  @keyframes glitch2 {
-    0%,90%,100% { transform: translate(0); opacity: 0; }
-    93%          { transform: translate(3px, 2px); opacity: 0.8; }
-    95%          { transform: translate(-3px, 0px); opacity: 0.8; }
-    97%          { transform: translate(0); opacity: 0; }
-  }
-
-  /* ── TERMINAL TYPING ── */
-  .typing-line {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    color: rgba(0,207,255,0.5);
-    letter-spacing: 0.05em;
-    overflow: hidden;
-    white-space: nowrap;
-    border-right: 2px solid var(--cyan);
-    width: 0;
-    animation: typeIn 2.5s steps(60, end) 0.5s forwards, cursorBlink 0.8s step-end infinite;
-  }
-  @keyframes typeIn { to { width: 100%; } }
-  @keyframes cursorBlink { 50% { border-color: transparent; } }
-
-  /* ── SCROLLBAR ── */
+  /* ============================
+     SCROLLBAR
+  ============================ */
   ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: linear-gradient(var(--violet), var(--cyan)); border-radius: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,207,255,0.35); border-radius: 6px; }
 
-  /* ── RESPONSIVE ── */
-  @media (max-width: 600px) {
-    .card-inner { flex-wrap: wrap; }
-    .btn-send { width: 100%; }
-    .status-ping { display: none; }
+  /* ============================
+     MOBILE RESPONSIVE
+  ============================ */
+  @media(max-width:640px) {
+    .header-inner { height: auto; padding: 12px 0; flex-wrap: wrap; }
+    .hud-panel { gap: 12px; }
+    .hud-clock { font-size: 18px; }
+    .search-wrap { order: 3; max-width: 100%; width: 100%; }
+    .games-grid { grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 14px; }
+    .btn-send { padding: 12px; font-size: 11px; }
+    .modal-info-grid { grid-template-columns: 1fr; }
+    .modal-title { font-size: 16px; }
+    .score-box { width: 44px; height: 44px; font-size: 18px; }
+    .toast { min-width: 260px; }
+    #toastContainer { right: 12px; bottom: 20px; }
   }
+  @media(max-width:400px) {
+    .games-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ============================
+     SECTION TITLE
+  ============================ */
+  .section-divider {
+    display: flex; align-items: center; gap: 12px;
+    padding: 24px 0 4px; font-family: var(--font-mono); font-size: 11px;
+    color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase;
+  }
+  .section-divider::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,rgba(0,207,255,0.3),transparent); }
 </style>
 </head>
 <body>
 
-<div class="ambient ambient-1"></div>
-<div class="ambient ambient-2"></div>
+<!-- Dynamic Background Layers -->
+<div class="bg-aurora" aria-hidden="true"></div>
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-scanlines" aria-hidden="true"></div>
 
-<div id="toast-container"></div>
+<!-- ========== HEADER ========== -->
+<header>
+  <div class="header-inner">
+    <!-- Logo -->
+    <div class="logo-wrap">
+      <div class="logo-icon">AS</div>
+      <div>
+        <div class="logo-text">AURORA<span> STORE</span></div>
+        <div class="logo-sub">BY LUCIO &nbsp;·&nbsp; v3.0.0</div>
+      </div>
+    </div>
 
+    <!-- Search -->
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="searchInput" placeholder="BUSCAR EN EL CATÁLOGO..." autocomplete="off" aria-label="Buscar juego">
+    </div>
+
+    <!-- HUD -->
+    <div class="hud-panel">
+      <div class="hud-clock" id="hudClock">00:00:00</div>
+      <div class="hud-ping">
+        <div class="ping-dot"></div>
+        CONEXIÓN ENCRIPTADA
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ========== MAIN ========== -->
 <div class="wrapper">
+  <!-- Hero -->
+  <div class="page-hero">
+    <h2>CATÁLOGO <span class="glow">DIGITAL</span></h2>
+    <p>Selecciona un título para ver detalles o envíalo directamente a tu consola Xbox.</p>
+  </div>
 
-  <!-- HEADER -->
-  <header>
-    <div class="logo-line">
-      <div class="logo-icon">
-        <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="26,4 48,16 48,36 26,48 4,36 4,16" stroke="#00CFFF" stroke-width="1.5" fill="rgba(0,207,255,0.05)"/>
-          <polygon points="26,10 42,19 42,33 26,42 10,33 10,19" stroke="#7B2FFF" stroke-width="1" fill="rgba(123,47,255,0.05)"/>
-          <circle cx="26" cy="26" r="7" fill="none" stroke="#00CFFF" stroke-width="1.5"/>
-          <line x1="26" y1="4"  x2="26" y2="19" stroke="#00CFFF" stroke-width="1" opacity="0.5"/>
-          <line x1="26" y1="33" x2="26" y2="48" stroke="#00CFFF" stroke-width="1" opacity="0.5"/>
-          <line x1="4"  y1="16" x2="19" y2="22" stroke="#7B2FFF" stroke-width="1" opacity="0.5"/>
-          <line x1="33" y1="30" x2="48" y2="36" stroke="#7B2FFF" stroke-width="1" opacity="0.5"/>
-          <circle cx="26" cy="26" r="3" fill="#00CFFF" opacity="0.9"/>
-        </svg>
+  <!-- Tabs -->
+  <nav class="nav-tabs" id="navTabs" role="tablist" aria-label="Categorías">
+    <button class="tab-btn active" data-cat="all"     role="tab">⬡ TODO</button>
+    <button class="tab-btn"        data-cat="juego"   role="tab">🎮 JUEGOS</button>
+    <button class="tab-btn"        data-cat="app"     role="tab">📱 APPS</button>
+    <button class="tab-btn"        data-cat="emu"     role="tab">👾 EMULADORES</button>
+    <button class="tab-btn"        data-cat="plugin"  role="tab">🔧 PLUGINS</button>
+  </nav>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <span>MOSTRANDO <span id="resultCount">0</span> TÍTULOS</span>
+    <span>·</span>
+    <span>CAT: <span id="activeCategory">TODO</span></span>
+  </div>
+
+  <div class="section-divider">CATÁLOGO ACTIVO</div>
+
+  <!-- Grid -->
+  <main class="games-grid" id="gamesGrid" role="main"></main>
+</div>
+
+<!-- ========== MODAL ========== -->
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalGameTitle">
+  <div class="modal" id="modalContent">
+    <div class="modal-cover" id="modalCover"></div>
+    <div class="modal-body">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalGameTitle"></h2>
+        <button class="modal-close" id="modalClose" aria-label="Cerrar">✕</button>
       </div>
-      <h1 class="site-title glitch" data-text="AURORA STORE">AURORA STORE</h1>
-    </div>
-    <p class="subtitle">BY LUCIO // XBOX 360 HOMEBREW REPOSITORY</p>
-    <div class="header-bar"></div>
-    <p class="typing-line" style="margin:14px auto 0; max-width:480px;">
-      > sys.init :: scanning packages :: connection secured :: ready_
-    </p>
-  </header>
-
-  <!-- STATUS BAR -->
-  <div class="status-bar">
-    <div>
-      <span class="status-dot"></span>
-      SISTEMA ONLINE — AURORA BUILD 5.0.715
-    </div>
-    <div class="status-ping">LATENCIA <span id="ping">--</span> ms</div>
-    <div id="clock" style="color:var(--text-dim)">--:--:--</div>
-  </div>
-
-  <!-- CATALOG -->
-  <div class="section-header">
-    <span class="section-tag">// PAQUETES DISPONIBLES</span>
-    <div class="section-line"></div>
-  </div>
-
-  <div class="catalog" id="catalog"></div>
-
-  <!-- FOOTER -->
-  <footer>
-    <p>AURORA STORE <span>BY LUCIO</span> // XBOX 360 HOMEBREW // NO AFFILIATION WITH MICROSOFT</p>
-    <p style="margin-top:6px; opacity:0.4;">remote_command.json — DESCARGA DIRECTA AL PRESIONAR "ENVIAR A MI XBOX"</p>
-  </footer>
-
-</div><!-- /wrapper -->
-
-<script>
-// ── DATA ──────────────────────────────────────────────────────────────────────
-const packages = [
-  {
-    id: 1,
-    name: "Dashlaunch",
-    type: "DASHBOARD",
-    version: "v3.21",
-    desc: "Plugin de lanzador para RGH/JTAG. Permite configurar parámetros del kernel, plugins de memoria, parches NXE y control total sobre el arranque del sistema Xbox 360.",
-    url: "http://www.homebrew-connection.org/files/xbox/dashlaunch/Dashlaunch_321.zip",
-    dest: "HDD:\\Homebrew\\Dashlaunch\\",
-    icon: `<svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="3" y="3" width="28" height="28" rx="2" stroke="#00CFFF" stroke-width="1.5" fill="rgba(0,207,255,0.05)"/>
-      <line x1="3" y1="12" x2="31" y2="12" stroke="#00CFFF" stroke-width="1" opacity="0.5"/>
-      <rect x="7" y="16" width="6" height="6" fill="#00CFFF" opacity="0.7"/>
-      <rect x="16" y="16" width="11" height="2" fill="#7B2FFF" opacity="0.8"/>
-      <rect x="16" y="20" width="7" height="2" fill="#7B2FFF" opacity="0.5"/>
-      <circle cx="27" cy="7.5" r="2" fill="#00ff88" opacity="0.8"/>
-    </svg>`
-  },
-  {
-    id: 2,
-    name: "XexMenu",
-    type: "FILE MANAGER",
-    version: "v1.2",
-    desc: "Gestor de archivos y ejecutor de XEX para Xbox 360 modificadas. Permite navegar el sistema de archivos, ejecutar homebrew y copiar/mover archivos entre dispositivos de almacenamiento.",
-    url: "http://www.mediafire.com/file/xexmenu12.zip",
-    dest: "HDD:\\Homebrew\\XexMenu\\",
-    icon: `<svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M5 6 L14 6 L17 10 L29 10 L29 28 L5 28 Z" stroke="#7B2FFF" stroke-width="1.5" fill="rgba(123,47,255,0.05)"/>
-      <line x1="9"  y1="16" x2="25" y2="16" stroke="#7B2FFF" stroke-width="1.2" opacity="0.7"/>
-      <line x1="9"  y1="20" x2="21" y2="20" stroke="#7B2FFF" stroke-width="1.2" opacity="0.5"/>
-      <line x1="9"  y1="24" x2="18" y2="24" stroke="#7B2FFF" stroke-width="1.2" opacity="0.3"/>
-      <circle cx="27" cy="27" r="5" fill="#7B2FFF" opacity="0.2" stroke="#7B2FFF" stroke-width="1"/>
-      <line x1="27" y1="24.5" x2="27" y2="29.5" stroke="#7B2FFF" stroke-width="1.5"/>
-      <line x1="24.5" y1="27" x2="29.5" y2="27" stroke="#7B2FFF" stroke-width="1.5"/>
-    </svg>`
-  },
-  {
-    id: 3,
-    name: "Aurora Repo",
-    type: "REPOSITORY",
-    version: "v0.7b",
-    desc: "Repositorio oficial del dashboard Aurora. Incluye títulos homebrew, emuladores, aplicaciones y actualizaciones firmadas para consolas Xbox 360 con exploit de hardware activo.",
-    url: "http://repo.aurorastore.org/feed.json",
-    dest: "HDD:\\Aurora\\User\\Cache\\",
-    icon: `<svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="17" cy="17" r="13" stroke="#00CFFF" stroke-width="1.5" fill="rgba(0,207,255,0.04)"/>
-      <ellipse cx="17" cy="17" rx="7" ry="13" stroke="#00CFFF" stroke-width="1" opacity="0.5"/>
-      <line x1="4" y1="17" x2="30" y2="17" stroke="#00CFFF" stroke-width="1" opacity="0.4"/>
-      <line x1="6"  y1="11" x2="28" y2="11" stroke="#7B2FFF" stroke-width="0.8" opacity="0.4"/>
-      <line x1="6"  y1="23" x2="28" y2="23" stroke="#7B2FFF" stroke-width="0.8" opacity="0.4"/>
-      <circle cx="17" cy="17" r="3" fill="#00CFFF" opacity="0.6"/>
-    </svg>`
-  }
-];
-
-// ── RENDER CATALOG ─────────────────────────────────────────────────────────
-const catalog = document.getElementById('catalog');
-
-packages.forEach(pkg => {
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.setAttribute('data-id', pkg.id);
-  card.innerHTML = `
-    <div class="scan-line"></div>
-    <div class="card-inner">
-      <div class="card-icon">${pkg.icon}</div>
-      <div class="card-info">
-        <div class="card-name">${pkg.name}</div>
-        <div class="card-meta">
-          <span class="badge badge-type">${pkg.type}</span>
-          <span class="badge badge-ver">${pkg.version}</span>
-          <span class="badge badge-free">FREE</span>
+      <div class="modal-score">
+        <div class="score-box" id="modalScore">--</div>
+        <div class="score-label">
+          <strong id="modalScoreLabel">RATING</strong>
+          PUNTUACIÓN METACRITIC<br>
+          <span id="modalScoreSub" style="color:var(--cyan);font-size:10px"></span>
         </div>
-        <div class="card-desc">${pkg.desc}</div>
-        <div class="card-url">&gt; ${pkg.url}</div>
       </div>
-      <button
-        class="btn-send"
-        onclick="sendToXbox(${pkg.id})"
-        aria-label="Enviar ${pkg.name} a Xbox"
-      >
-        <span class="btn-icon">⬡</span>
-        ENVIAR A<br>MI XBOX
+      <div class="modal-tags" id="modalTags"></div>
+      <p class="modal-desc" id="modalDesc"></p>
+      <div class="modal-info-grid" id="modalInfoGrid"></div>
+      <button class="btn-primary" id="modalSendBtn">
+        <span>⚡ ENVIAR A XBOX</span>
       </button>
     </div>
-  `;
-  catalog.appendChild(card);
-});
+  </div>
+</div>
 
-// ── SEND TO XBOX ───────────────────────────────────────────────────────────
-function sendToXbox(pkgId) {
-  const pkg = packages.find(p => p.id === pkgId);
-  if (!pkg) return;
+<!-- Toast container -->
+<div id="toastContainer" aria-live="polite"></div>
 
-  const randomId = Math.floor(Math.random() * 9000000) + 1000000;
+<!-- ============================
+     JAVASCRIPT ENGINE
+============================ -->
+<script>
+'use strict';
 
-  const payload = {
-    action:  "download",
-    id:      randomId,
-    name:    pkg.name,
-    url:     pkg.url,
-    dest:    pkg.dest,
-    timestamp: new Date().toISOString(),
-    source:  "aurora_store_by_lucio"
-  };
+// ── CATALOGUE DATABASE ──────────────────────────────────────────────────────
+// Agrega tus títulos aquí. El diseño se adapta automáticamente.
+const CATALOGO = {
+  juego: [
+    {
+      id: "halo-3",
+      titulo: "Halo 3",
+      url: "https://tu-servidor.com/halo3.zip", // URL directa del juego (ZIP)
+      dest: "Hdd1:\\Games\\Halo 3",            // Carpeta de destino en Xbox
+      img: "https://i.postimg.cc/RVwrmxqj/Halo-3.png", // Caratula del juego
+      desarrollador: "Bungie",
+      genero: "FPS",
+      peso: "6.3 GB",
+      rating: 94,
+      descripcion: "Termina la lucha. El épico cierre de la trilogía original de Bungie llega a tu consola.",
+      emoji: "🪖",
+      tags: ["Clásico", "Multijugador", "RGH"],
+      año: 2007
+    },
+    {
+      id: "forza-horizon-5",
+      titulo: "Forza Horizon 5",
+      desarrollador: "Playground Games",
+      genero: "Carreras",
+      peso: "103 GB",
+      rating: 92,
+      descripcion: "Conduce los autos más icónicos del mundo en el festival de carreras más grande jamás creado, ambientado en los increíbles paisajes de México.",
+      emoji: "🏎️",
+      tags: ["Exclusivo", "Open World", "Multijugador"],
+      año: 2021
+    },
+    {
+      id: "starfield",
+      titulo: "Starfield",
+      desarrollador: "Bethesda Game Studios",
+      genero: "RPG / Sci-Fi",
+      peso: "139 GB",
+      rating: 83,
+      descripcion: "La primera IP original de Bethesda en 25 años. Explora el cosmos, construye tu personaje y descubre los secretos del universo en este masivo RPG espacial.",
+      emoji: "🚀",
+      tags: ["Exclusivo", "RPG", "Open World"],
+      año: 2023
+    },
+    {
+      id: "cyberpunk-2077",
+      titulo: "Cyberpunk 2077",
+      desarrollador: "CD Projekt RED",
+      genero: "RPG / Acción",
+      peso: "70 GB",
+      rating: 90,
+      descripcion: "Sumérgete en Night City, una megalópolis obsesionada con el poder, el glamour y la modificación corporal. Phantom Liberty lleva la experiencia a otro nivel.",
+      emoji: "🤖",
+      tags: ["Open World", "RPG", "Phantom Liberty"],
+      año: 2020
+    },
+    {
+      id: "doom-eternal",
+      titulo: "DOOM Eternal",
+      desarrollador: "id Software",
+      genero: "FPS",
+      peso: "42 GB",
+      rating: 88,
+      descripcion: "La amenaza demoniaca que amenaza la existencia de la humanidad es mayor que nunca. Conviértete en el Doom Slayer y arrástralos de vuelta al infierno.",
+      emoji: "💀",
+      tags: ["Acción", "Fps", "Metal"],
+      año: 2020
+    },
+    {
+      id: "sea-of-thieves",
+      titulo: "Sea of Thieves",
+      desarrollador: "Rare",
+      genero: "Aventura",
+      peso: "50 GB",
+      rating: 82,
+      descripcion: "Forma tu tripulación y explora un mundo pirata sin límites. Saquea, comercia y enfrenta a los más temibles corsarios en este MMO de alto mar.",
+      emoji: "🏴‍☠️",
+      tags: ["Exclusivo", "Multijugador", "Online"],
+      año: 2018
+    },
+    {
+      id: "lies-of-p",
+      titulo: "Lies of P",
+      desarrollador: "Round8 Studio",
+      genero: "Soulslike",
+      peso: "21 GB",
+      rating: 80,
+      descripcion: "Inspirado en Pinocho, este soulslike de acción te lleva a Belle Époque donde deberás luchar para encontrar tu humanidad en un mundo de marionetas rebeldes.",
+      emoji: "🎭",
+      tags: ["Soulslike", "Dark Fantasy", "Difícil"],
+      año: 2023
+    },
+    {
+      id: "atomic-heart",
+      titulo: "Atomic Heart",
+      desarrollador: "Mundfish",
+      genero: "FPS / RPG",
+      peso: "30 GB",
+      rating: 74,
+      descripcion: "En una URSS retrofuturista los robots se han vuelto contra la humanidad. Tú eres el Major Nechaev: investiga qué salió mal con los experimentos del Proyecto 3826.",
+      emoji: "☢️",
+      tags: ["Retrofuturista", "FPS", "Ruso"],
+      año: 2023
+    }
+  ],
+  app: [
+    {
+      id: "plex",
+      titulo: "Plex",
+      desarrollador: "Plex Inc.",
+      genero: "Media Center",
+      peso: "320 MB",
+      rating: 88,
+      descripcion: "Organiza y transmite tu colección de películas, series y música desde cualquier servidor personal hacia tu Xbox con una interfaz pulida y veloz.",
+      emoji: "🎬",
+      tags: ["Streaming", "Media", "Local"],
+      año: 2023
+    },
+    {
+      id: "youtube",
+      titulo: "YouTube",
+      desarrollador: "Google LLC",
+      genero: "Video",
+      peso: "210 MB",
+      rating: 91,
+      descripcion: "La plataforma de video más grande del mundo directamente en tu Xbox. Disfruta 4K HDR con soporte para Dolby Vision en tu pantalla de living.",
+      emoji: "▶️",
+      tags: ["Streaming", "4K", "Gratis"],
+      año: 2023
+    },
+    {
+      id: "spotify",
+      titulo: "Spotify",
+      desarrollador: "Spotify AB",
+      genero: "Música",
+      peso: "185 MB",
+      rating: 85,
+      descripcion: "80 millones de canciones disponibles. Escucha música mientras juegas, crea playlists y conecta con amigos a través de la app más popular de música en streaming.",
+      emoji: "🎵",
+      tags: ["Música", "Streaming", "Gratis/Premium"],
+      año: 2023
+    }
+  ],
+  emu: [
+    {
+      id: "retroarch",
+      titulo: "RetroArch",
+      desarrollador: "Libretro",
+      genero: "Multi-emulador",
+      peso: "600 MB",
+      rating: 95,
+      descripcion: "El emulador definitivo. Soporte para más de 80 sistemas retro: NES, SNES, N64, PS1, PS2, GBA y más. Filtros CRT, cheats, netplay y guardar estados.",
+      emoji: "🕹️",
+      tags: ["Multi-sistema", "CRT", "Netplay"],
+      año: 2023
+    },
+    {
+      id: "xenia",
+      titulo: "Xenia Canary",
+      desarrollador: "Xenia Project",
+      genero: "Emulador Xbox 360",
+      peso: "90 MB",
+      rating: 78,
+      descripcion: "Emulador de Xbox 360 para PC. Compatible con cientos de títulos de la biblioteca clásica de Xbox 360 con mejoras de resolución y corrección de errores.",
+      emoji: "🟢",
+      tags: ["Xbox 360", "HD", "Experimental"],
+      año: 2023
+    },
+    {
+      id: "rpcs3",
+      titulo: "RPCS3",
+      desarrollador: "RPCS3 Team",
+      genero: "Emulador PS3",
+      peso: "150 MB",
+      rating: 88,
+      descripcion: "El emulador de PlayStation 3 de código abierto más avanzado. Juega cientos de exclusivos de PS3 a resoluciones superiores y 60 FPS estables.",
+      emoji: "🔵",
+      tags: ["PS3", "4K", "Open Source"],
+      año: 2023
+    }
+  ],
+  plugin: [
+    {
+      id: "devhome",
+      titulo: "Dev Home",
+      desarrollador: "Microsoft",
+      genero: "Developer Tool",
+      peso: "45 MB",
+      rating: 82,
+      descripcion: "Centro de control para desarrolladores. Administra tu entorno de desarrollo, sigue actualizaciones de repositorios y gestiona configuraciones desde un solo panel.",
+      emoji: "🔧",
+      tags: ["Dev", "Microsoft", "Gratis"],
+      año: 2023
+    },
+    {
+      id: "aurora-plugin-cover",
+      titulo: "Aurora Cover Manager",
+      desarrollador: "Aurora Team",
+      genero: "Gestor Multimedia",
+      peso: "12 MB",
+      rating: 90,
+      descripcion: "Descarga y gestiona automáticamente portadas, fondos y metadatos para toda tu biblioteca de juegos. Compatible con TheGamesDB y Xbox Marketplace.",
+      emoji: "🖼️",
+      tags: ["Aurora", "Covers", "Metadata"],
+      año: 2022
+    },
+    {
+      id: "xbdm",
+      titulo: "XBDM Plugin",
+      desarrollador: "Xbox Dev",
+      genero: "Debug Tool",
+      peso: "8 MB",
+      rating: 85,
+      descripcion: "Herramienta de debug para consolas Xbox modificadas. Permite inspección de memoria, gestión de archivos remotos y volcado de procesos en tiempo real.",
+      emoji: "⚙️",
+      tags: ["Dev", "Debug", "Advanced"],
+      año: 2021
+    }
+  ]
+};
 
-  const json     = JSON.stringify(payload, null, 2);
-  const blob     = new Blob([json], { type: 'application/json' });
-  const url      = URL.createObjectURL(blob);
-  const a        = document.createElement('a');
-  a.href         = url;
-  a.download     = 'remote_command.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+// ── UTILS ──────────────────────────────────────────────────────────────────
+const ALL_ITEMS = Object.entries(CATALOGO).flatMap(([cat, arr]) => arr.map(g => ({ ...g, _cat: cat })));
 
-  // Button feedback
-  const btn = document.querySelector(`.card[data-id="${pkgId}"] .btn-send`);
-  if (btn) {
-    btn.classList.add('sending');
-    btn.textContent = '✓ ENVIADO';
-    setTimeout(() => {
-      btn.classList.remove('sending');
-      btn.innerHTML = '<span class="btn-icon">⬡</span>ENVIAR A<br>MI XBOX';
-    }, 2200);
+function getRatingColor(r) {
+  if (r >= 85) return 'linear-gradient(135deg,#7B2FFF,#00CFFF)';
+  if (r >= 70) return 'linear-gradient(135deg,#ff9000,#ffcc00)';
+  return 'linear-gradient(135deg,#ff3c3c,#ff8800)';
+}
+function getRatingLabel(r) {
+  if (r >= 90) return 'OBRA MAESTRA';
+  if (r >= 80) return 'MUY BUENO';
+  if (r >= 70) return 'BUENO';
+  return 'REGULAR';
+}
+function catBadgeClass(cat) {
+  return { juego:'badge-game', app:'badge-app', emu:'badge-emu', plugin:'badge-plugin' }[cat] || '';
+}
+function catLabel(cat) {
+  return { juego:'GAME', app:'APP', emu:'EMU', plugin:'PLUGIN' }[cat] || cat.toUpperCase();
+}
+
+// ── CLOCK ──────────────────────────────────────────────────────────────────
+(function clock(){
+  const el = document.getElementById('hudClock');
+  function tick(){
+    const d = new Date();
+    el.textContent = [d.getHours(),d.getMinutes(),d.getSeconds()]
+      .map(v=>String(v).padStart(2,'0')).join(':');
+  }
+  tick(); setInterval(tick, 1000);
+})();
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let currentCat = 'all';
+let searchTerm  = '';
+let currentItem  = null;
+
+function getFiltered() {
+  return ALL_ITEMS.filter(item => {
+    const matchCat  = currentCat === 'all' || item._cat === currentCat;
+    const term      = searchTerm.toLowerCase();
+    const matchTerm = !term ||
+      item.titulo.toLowerCase().includes(term) ||
+      item.genero.toLowerCase().includes(term) ||
+      item.desarrollador.toLowerCase().includes(term) ||
+      (item.tags||[]).some(t => t.toLowerCase().includes(term));
+    return matchCat && matchTerm;
+  });
+}
+
+// ── RENDER GRID ────────────────────────────────────────────────────────────
+const grid = document.getElementById('gamesGrid');
+const resultCount = document.getElementById('resultCount');
+const activeCategory = document.getElementById('activeCategory');
+
+function renderGrid() {
+  const items = getFiltered();
+  resultCount.textContent = items.length;
+  activeCategory.textContent = currentCat === 'all' ? 'TODO' : currentCat.toUpperCase();
+  grid.innerHTML = '';
+
+  if (!items.length) {
+    grid.innerHTML = `<div class="empty-state">
+      <div class="icon">🔍</div>
+      <h3>SIN RESULTADOS</h3>
+      <p>No se encontraron títulos para "<em>${searchTerm}</em>"</p>
+    </div>`;
+    return;
   }
 
-  showToast(pkg.name, randomId);
+  items.forEach((item, i) => {
+    const card = document.createElement('article');
+    card.className = 'game-card';
+    card.style.animationDelay = `${i * 0.06}s`;
+    card.setAttribute('aria-label', item.titulo);
+
+    card.innerHTML = `
+      <div class="card-cover-placeholder">${item.emoji}</div>
+      <div class="card-badge ${catBadgeClass(item._cat)}">${catLabel(item._cat)}</div>
+      <div class="card-body">
+        <div class="card-title">${item.titulo}</div>
+        <div class="card-meta">
+          <span>${item.desarrollador}</span>
+          <span class="card-genre">${item.genero}</span>
+        </div>
+        <div class="card-rating">
+          <div class="rating-bar"><div class="rating-fill" style="width:${item.rating}%;background:${getRatingColor(item.rating)}"></div></div>
+          <span class="rating-num">${item.rating}</span>
+        </div>
+        <button class="btn-send" data-id="${item.id}" data-cat="${item._cat}" aria-label="Enviar ${item.titulo} a Xbox">
+          <span>⚡ ENVIAR A XBOX</span>
+        </button>
+      </div>
+    `;
+
+    card.addEventListener('click', e => {
+      if (!e.target.closest('.btn-send')) openModal(item);
+    });
+    card.querySelector('.btn-send').addEventListener('click', e => {
+      e.stopPropagation();
+      sendToXbox(item);
+    });
+
+    grid.appendChild(card);
+  });
 }
 
-// ── TOAST ──────────────────────────────────────────────────────────────────
-function showToast(name, id) {
-  const container = document.getElementById('toast-container');
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.innerHTML = `
-    <div class="toast-title">▶ COMANDO GENERADO</div>
-    <div>PKG: ${name}</div>
-    <div style="color:var(--violet)">ID#${id}</div>
-    <div style="color:rgba(0,255,136,0.8); margin-top:4px">✓ remote_command.json descargado</div>
+// ── TABS ──────────────────────────────────────────────────────────────────
+document.getElementById('navTabs').addEventListener('click', e => {
+  const btn = e.target.closest('.tab-btn');
+  if (!btn) return;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentCat = btn.dataset.cat;
+  renderGrid();
+});
+
+// ── SEARCH ────────────────────────────────────────────────────────────────
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchTerm = e.target.value;
+  renderGrid();
+});
+
+// ── MODAL ────────────────────────────────────────────────────────────────
+const overlay = document.getElementById('modalOverlay');
+const modalClose = document.getElementById('modalClose');
+
+function openModal(item) {
+  currentItem = item;
+  document.getElementById('modalCover').textContent = item.emoji;
+  document.getElementById('modalGameTitle').textContent = item.titulo;
+
+  const scoreBox = document.getElementById('modalScore');
+  scoreBox.textContent = item.rating;
+  scoreBox.style.background = getRatingColor(item.rating);
+  document.getElementById('modalScoreLabel').textContent = getRatingLabel(item.rating);
+  document.getElementById('modalScoreSub').textContent = `${item.año} · ${item.genero}`;
+
+  const tagsEl = document.getElementById('modalTags');
+  tagsEl.innerHTML = `
+    <span class="tag cyan">${catLabel(item._cat)}</span>
+    <span class="tag violet">${item.genero}</span>
+    ${(item.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}
   `;
-  container.appendChild(t);
-  setTimeout(() => { if (t.parentNode) t.parentNode.removeChild(t); }, 3800);
+
+  document.getElementById('modalDesc').textContent = item.descripcion;
+
+  document.getElementById('modalInfoGrid').innerHTML = `
+    <div class="info-item"><div class="info-label">Desarrollador</div><div class="info-value">${item.desarrollador}</div></div>
+    <div class="info-item"><div class="info-label">Género</div><div class="info-value">${item.genero}</div></div>
+    <div class="info-item"><div class="info-label">Peso</div><div class="info-value">${item.peso}</div></div>
+    <div class="info-item"><div class="info-label">Lanzamiento</div><div class="info-value">${item.año}</div></div>
+  `;
+
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  overlay.querySelector('.modal').scrollTop = 0;
 }
 
-// ── CLOCK + FAKE PING ──────────────────────────────────────────────────────
-function updateClock() {
-  const now = new Date();
-  const h = String(now.getHours()).padStart(2,'0');
-  const m = String(now.getMinutes()).padStart(2,'0');
-  const s = String(now.getSeconds()).padStart(2,'0');
-  const el = document.getElementById('clock');
-  if (el) el.textContent = `${h}:${m}:${s}`;
+function closeModal() {
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  setTimeout(() => { currentItem = null; }, 350);
 }
-setInterval(updateClock, 1000);
-updateClock();
 
-function updatePing() {
-  const ping = Math.floor(Math.random() * 30) + 12;
-  const el = document.getElementById('ping');
-  if (el) el.textContent = ping;
+modalClose.addEventListener('click', closeModal);
+overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+document.getElementById('modalSendBtn').addEventListener('click', () => {
+  if (currentItem) { closeModal(); sendToXbox(currentItem); }
+});
+
+// ── SEND TO XBOX / TOAST ──────────────────────────────────────────────────
+function generateId() {
+  return 'XBOX-' + Math.random().toString(36).substr(2,6).toUpperCase() + '-' + Date.now().toString(36).toUpperCase();
 }
-setInterval(updatePing, 2800);
-updatePing();
+
+function sendToXbox(item) {
+  const cmdId = generateId();
+  const payload = {
+    remote_command: {
+      id: cmdId,
+      action: "INSTALL_TITLE",
+      target: item.id,
+      category: item._cat,
+      title: item.titulo,
+      timestamp: new Date().toISOString(),
+      requester: "AURORA_STORE_BY_LUCIO"
+    }
+  };
+
+  // Simulate download of remote_command.json
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'remote_command.json'; a.click();
+  URL.revokeObjectURL(url);
+
+  showToast({
+    icon: '⚡',
+    title: 'COMANDO ENVIADO',
+    msg: `${item.titulo}\nID: ${cmdId}`,
+    color: 'var(--cyan)'
+  });
+}
+
+function showToast({ icon, title, msg, color = 'var(--cyan)' }) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.style.borderLeftColor = color;
+  toast.innerHTML = `
+    <div class="toast-icon">${icon}</div>
+    <div>
+      <div class="toast-title">${title}</div>
+      <div class="toast-msg">${msg.replace(/\n/g,'<br>')}</div>
+    </div>
+  `;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('exit');
+    setTimeout(() => toast.remove(), 350);
+  }, 4500);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+renderGrid();
 </script>
 </body>
 </html>
